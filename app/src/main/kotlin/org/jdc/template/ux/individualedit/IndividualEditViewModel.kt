@@ -1,13 +1,15 @@
 package org.jdc.template.ux.individualedit
 
-import androidx.databinding.ObservableField
+import androidx.compose.runtime.mutableStateOf
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
+import org.jdc.template.Analytics
 import org.jdc.template.R
 import org.jdc.template.coroutine.channel.ViewModelChannel
 import org.jdc.template.delegates.requireSavedState
@@ -15,9 +17,12 @@ import org.jdc.template.model.db.main.individual.Individual
 import org.jdc.template.model.repository.IndividualRepository
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 class IndividualEditViewModel
 @ViewModelInject constructor(
+    analytics: Analytics,
     private val individualRepository: IndividualRepository,
     @Assisted savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -28,14 +33,18 @@ class IndividualEditViewModel
     private var individual = Individual()
 
     // Fields
-    val firstName = ObservableField<String>()
-    val lastName = ObservableField<String>()
-    val phone = ObservableField<String>()
-    val email = ObservableField<String>()
-    val birthDate = ObservableField<LocalDate?>()
-    val alarmTime = ObservableField<LocalTime>()
+    val firstName = mutableStateOf("")
+    val firstNameError = mutableStateOf(false)
+    val lastName = mutableStateOf("")
+    val phone = mutableStateOf("")
+    val email = mutableStateOf("")
+    val birthDate = mutableStateOf<LocalDate?>(null)
+    val birthDateMillis get() = birthDate.value?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
+    val alarmTime = mutableStateOf<LocalTime>(LocalTime.now())
+    val alarmTimeMillis get() = OffsetDateTime.now().with(alarmTime.value).toInstant().toEpochMilli()
 
     init {
+        analytics.logEvent(Analytics.EVENT_EDIT_INDIVIDUAL)
         loadIndividual()
     }
 
@@ -43,47 +52,41 @@ class IndividualEditViewModel
         individualRepository.getIndividual(individualId)?.let {
             individual = it
 
-            firstName.set(it.firstName)
-            lastName.set(it.lastName)
-            phone.set(it.phone)
-            email.set(it.email)
-            birthDate.set(it.birthDate)
-            alarmTime.set(it.alarmTime)
+            firstName.value = it.firstName
+            lastName.value = it.lastName
+            phone.value = it.phone
+            email.value = it.email
+            birthDate.value = it.birthDate
+            alarmTime.value = it.alarmTime
         }
     }
 
-    fun saveIndividual() = viewModelScope.launch {
-        if (!validate()) {
-            return@launch
+    fun saveIndividual(): Boolean {
+        val valid = validate()
+        if (valid) GlobalScope.launch {
+            individual.firstName = firstName.value
+            individual.lastName = lastName.value
+            individual.phone = phone.value
+            individual.email = email.value
+            individual.birthDate = birthDate.value
+            individual.alarmTime = alarmTime.value
+            individualRepository.saveIndividual(individual)
         }
-
-        individual.firstName = firstName.get() ?: return@launch
-        individual.lastName = lastName.get() ?: ""
-        individual.phone = phone.get() ?: ""
-        individual.email = email.get() ?: ""
-        individual.birthDate = birthDate.get()
-        individual.alarmTime = alarmTime.get() ?: LocalTime.now()
-
-        individualRepository.saveIndividual(individual)
-
-        _eventChannel.sendAsync(Event.IndividualSaved)
+        return valid
     }
 
     private fun validate(): Boolean {
-        if (firstName.get().isNullOrBlank()) {
-            _eventChannel.sendAsync(Event.ValidationSaveError(FieldValidationError.FIRST_NAME_REQUIRED))
-            return false
+        return firstName.value.isNotBlank().also { valid ->
+            firstNameError.value = !valid   // show error state if field is not valid
         }
-
-        return true
     }
 
     fun onBirthDateClicked() {
-        _eventChannel.sendAsync(Event.ShowBirthDateSelection(birthDate.get() ?: LocalDate.now()))
+        _eventChannel.sendAsync(Event.ShowBirthDateSelection(birthDate.value ?: LocalDate.now()))
     }
 
     fun onAlarmTimeClicked() {
-        _eventChannel.sendAsync(Event.ShowAlarmTimeSelection(alarmTime.get() ?: LocalTime.now()))
+        _eventChannel.sendAsync(Event.ShowAlarmTimeSelection(alarmTime.value ?: LocalTime.now()))
     }
 
     enum class FieldValidationError(val errorMessageId: Int) {
@@ -91,9 +94,7 @@ class IndividualEditViewModel
     }
 
     sealed class Event {
-        object IndividualSaved : Event()
         class ShowBirthDateSelection(val date: LocalDate) : Event()
         class ShowAlarmTimeSelection(val time: LocalTime) : Event()
-        class ValidationSaveError(val error: FieldValidationError) : Event()
     }
 }

@@ -3,6 +3,7 @@ const val KOTLIN_VERSION = "1.4.0"
 private const val COROUTINES_VERSION = "1.3.9"
 const val DAGGER_HILT_VERSION = "2.28.3-alpha"
 const val ANDROIDX_NAVIGATION_VERSION = "2.3.0"
+const val COMPOSE_VERSION = "1.0.0-alpha02"
 
 object Deps {
     // Android (https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-master-dev/buildSrc/src/main/kotlin/androidx/build/dependencies/Dependencies.kt)
@@ -15,6 +16,11 @@ object Deps {
     const val ANDROIDX_ACTIVITY_KTX = "androidx.activity:activity-ktx:1.1.0"
     const val ANDROIDX_FRAGMENT_KTX = "androidx.fragment:fragment-ktx:1.2.5"
     const val ANDROIDX_STARTUP = "androidx.startup:startup-runtime:1.0.0-alpha03"
+
+    const val COMPOSE_LAYOUT = "androidx.compose.foundation:foundation-layout:$COMPOSE_VERSION"
+    const val COMPOSE_LIVEDATA = "androidx.compose.runtime:runtime-livedata:$COMPOSE_VERSION"
+    const val COMPOSE_MATERIAL = "androidx.compose.material:material:$COMPOSE_VERSION"
+    const val COMPOSE_TOOLING = "androidx.ui:ui-tooling:$COMPOSE_VERSION"
 
     private const val LIFECYCLE_VERSION = "2.2.0"
     const val ARCH_LIFECYCLE_EXT = "androidx.lifecycle:lifecycle-extensions:$LIFECYCLE_VERSION"
@@ -31,7 +37,7 @@ object Deps {
     const val ARCH_WORK_GCM = "androidx.work:work-gcm:$WORKMANAGER_VERSION" // Remove with min SDK 23
     const val WORKMANAGER_TOOLS = "org.dbtools:workmanager-tools:1.13.0"
 
-    const val ANDROID_MATERIAL = "com.google.android.material:material:1.2.0" // https://github.com/material-components/material-components-android/releases
+    const val ANDROID_MATERIAL = "com.google.android.material:material:1.3.0-alpha02" // https://github.com/material-components/material-components-android/releases
 
     // Play Services
     const val PLAYSERVICE_CORE = "com.google.android.play:core-ktx:1.8.1" // https://developer.android.com/reference/com/google/android/play/core/release-notes
@@ -89,7 +95,7 @@ object Deps {
     const val TEST_ANDROIDX_JUNIT = "androidx.test.ext:junit:1.1.2"
 
     // Test - JUnit
-    private const val JUNIT_VERSION = "5.6.2"
+    private const val JUNIT_VERSION = "5.7.0-M1"
     const val TEST_JUNIT = "org.junit.jupiter:junit-jupiter:$JUNIT_VERSION"
     const val TEST_JUNIT_ENGINE = "org.junit.jupiter:junit-jupiter-engine:$JUNIT_VERSION"
     const val TEST_OKHTTP_MOCKWEBSERVER = "com.squareup.okhttp3:mockwebserver:$OKHTTP_VERSION"

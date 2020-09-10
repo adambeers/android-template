@@ -6,10 +6,11 @@ buildscript {
         google()
         mavenCentral()
         maven("https://maven.fabric.io/public")
+//        maven("https://dl.bintray.com/kotlin/kotlin-eap/")
         jcenter()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:4.1.0-rc02")
+        classpath("com.android.tools.build:gradle:4.2.0-alpha10")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION")
         classpath("org.jetbrains.kotlin:kotlin-serialization:$KOTLIN_VERSION")
         classpath("com.google.dagger:hilt-android-gradle-plugin:$DAGGER_HILT_VERSION")
@@ -27,6 +28,7 @@ allprojects {
         mavenLocal()
         google()
         mavenCentral()
+//        maven("https://dl.bintray.com/kotlin/kotlin-eap/")
         jcenter()
 //        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
